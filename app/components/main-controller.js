@@ -1,5 +1,66 @@
 app.controller('MainController', function ($scope, CardService) {
-    $scope.deck = CardService.getDeck();
+    
+    //game.isValidPlay(card, player);
+    
+    function Game(options) {
+        $scope.deck = CardService.getDeck();
+        $scope.players = [];
+
+        while (options.totalPlayers) {
+            $scope.players.push(new Player(prompt("Player Name: "), prompt("What is your favorite color?")));
+            options.totalPlayers--;
+        }
+
+        deal();
+
+    };
+
+    function deal() {
+        for (var i = 0; i < $scope.players.length; i++) {
+            var currentPlayer = $scope.players[i];
+            while (currentPlayer.hand.length < 6) {
+                currentPlayer.hand.push(takeCard());
+            }
+        }
+    };
+
+    function takeCard() {
+        if ($scope.deck.length > 0) {
+            return $scope.deck.pop();
+        }
+    }
+
+    function Player(name, color) {
+        var player = this;
+        player.name = name;
+        player.color = color;
+        player.immunities = {};
+        player.hazards = {};
+        player.limit = false;
+        player.stopped = true;
+        player.distance = 0;
+        player.hand = [];
+
+        player.setImmunity = function (type) {
+            player.immunities[type] = true;
+        }
+        player.move = function (distance) {
+            player.distance += distance;
+        }
+        player.setHazard = function (type) {
+            player.hazards[type] = true;
+        }
+        player.removeHazard = function (type) {
+            player.hazards[type] = false;
+        }
+        player.setStop = function (bool) {
+            player.stopped = bool;
+        }
+        player.setLimit = function (bool) {
+            player.limit = bool;
+        }
+    }
+
 });
 
 app.service('CardService', function () {
