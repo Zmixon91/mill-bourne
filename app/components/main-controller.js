@@ -2,6 +2,8 @@ app.controller('MainController', function ($scope, CardService) {
     
     //game.isValidPlay(card, player);
     
+    var mc = this;
+    
     function Game(options) {
         $scope.deck = CardService.getDeck();
         $scope.players = [];
@@ -25,13 +27,19 @@ app.controller('MainController', function ($scope, CardService) {
         activePlayer.hand.push(takeCard());
     }
 
-    function playCard(card, target) {
+    $scope.playCard = function() {
         //TODO: call is a valid play function
-        card.effect(target);
+        if(!mc.activeCard && !mc.currentTarget) {
+            return;
+        }
+        mc.activeCard.effect(mc.currentTarget);
         $scope.activePlayerIndex++;
         if ($scope.activePlayerIndex > $scope.players.length - 1) {
             $scope.activePlayerIndex = 0;
         }
+        //TODO: remove played card
+        mc.activeCard = '';
+        mc.currentTarget = '';
         startTurn();
     }
 
