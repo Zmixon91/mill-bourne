@@ -5,14 +5,44 @@ app.controller('MainController', function ($scope, CardService) {
     function Game(options) {
         $scope.deck = CardService.getDeck();
         $scope.players = [];
-
-        while (options.totalPlayers) {
-            $scope.players.push(new Player(prompt("Player Name: "), prompt("What is your favorite color?")));
-            options.totalPlayers--;
+        $scope.activePlayerIndex = 0;
+        var playerCount = options.totalPlayers;
+        while (playerCount) {
+            $scope.players.push(new Player(prompt("Player Name:"), prompt("What is your favorite color?")));
+            playerCount--;
         }
 
         deal();
+        startTurn();
+        // while(!victory(options.trip)) {
+        //     takeTurn();
+        // }
 
+    };
+
+    function startTurn() {
+        var activePlayer = $scope.players[$scope.activePlayerIndex];
+        activePlayer.hand.push(takeCard());
+    }
+
+    function playCard(card, target) {
+        //TODO: call is a valid play function
+        card.effect(target);
+        $scope.activePlayerIndex++;
+        if ($scope.activePlayerIndex > $scope.players.length - 1) {
+            $scope.activePlayerIndex = 0;
+        }
+        startTurn();
+    }
+
+    function victory(trip) {
+        for (var i = 0; i < $scope.players.length; i++) {
+            var currentPlayer = $scope.players[i];
+            if (currentPlayer.distance >= trip) {
+                $scope.winner = currentPlayer;
+                return true;
+            }
+        }
     };
 
     function deal() {
@@ -61,18 +91,21 @@ app.controller('MainController', function ($scope, CardService) {
         }
     }
 
+    new Game({ totalPlayers: 3 });
+
 });
 
 app.service('CardService', function () {
     var base = 'assets/img/cards/';
-    var cards = [{
-        title: '25 Miles',
-        effect: function (player) {
-            player.move(25);
-        },
-        img: base + '25mile.png',
-        quantity: 10
-    }, {
+    var cards = [
+        {
+            title: '25 Miles',
+            effect: function (player) {
+                player.move(25);
+            },
+            img: base + '25mile.png',
+            quantity: 10
+        }, {
             title: '75 Miles',
             effect: function (player) {
                 player.move(75);
@@ -167,7 +200,7 @@ app.service('CardService', function () {
                 player.removeHazard('out-of-gas');
                 player.setStop(false);
             },
-            img: base + 'extraTank.png',
+            img: base + 'gasoline.png',
             quantity: 6
         }, {
             title: 'End of Speed Limit',
@@ -213,7 +246,8 @@ app.service('CardService', function () {
             },
             img: base + 'rightOfWay.png',
             quantity: 1
-        }];
+        }
+    ];
 
     var Card = function (card) {
         this.title = card.title;
